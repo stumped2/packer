@@ -9,8 +9,28 @@ if [ "$ubuntu_version" = "12.04" ]; then
     rm -rf /var/lib/apt/lists;
 fi
 
+# add apt-cacher-ng proxy
+cat <<EOF >/etc/apt/apt.conf.d/01proxy
+Acquire::http { Proxy "http://192.168.1.3:3142"; }
+Acquire::https { Proxy "false"; }
+
+EOF
+cat <<EOF >/etc/apt/apt.conf.d/01pipeline
+Acquire::http { Pipeline "300"; }
+
+EOF
+
+# install puppet
+wget --no-check-certificate https://apt.puppetlabs.com/puppetlabs-release-trusty.deb
+dpkg -i puppetlabs-release-trusty.deb
+
 # Update the package list
 apt-get update;
+
+apt-get -y install puppet
+
+gem install deep_merge
+
 
 # Upgrade all installed packages incl. kernel and kernel headers
 if [ "$ubuntu_major_version" -lt 14 ]; then
